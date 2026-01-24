@@ -37,7 +37,7 @@ function enableSqlLogging(pool: Pool) {
   pool.query = async (...args: any[]) => {
     const start = Date.now()
     try {
-      // @ts-ignore: Spread arguments are safe here
+      // @ts-expect-error: Spread arguments are safe here
       const result = await originalQuery(...args)
       const duration = Date.now() - start
 

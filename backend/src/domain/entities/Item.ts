@@ -60,7 +60,7 @@ export abstract class Item {
 }
 
 export class UnitItem extends Item {
-  itemType: 'UNIT' = 'UNIT'
+  itemType: string = 'UNIT'
 
   constructor(
     id: string,
@@ -86,7 +86,8 @@ export class UnitItem extends Item {
 }
 
 export class KgItem extends Item {
-  itemType: 'KG' = 'KG'
+  itemType: string = 'KG'
+
   constructor(
     id: string,
     name: string,

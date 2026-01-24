@@ -7,7 +7,7 @@
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint --config eslint.strict.config.mjs . --ext .ts",
     "check": "npm run typecheck && npm run lint",
     "start": "node dist/index.js",
     "test": "echo \"TODO: add tests\""
