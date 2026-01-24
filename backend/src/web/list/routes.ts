@@ -12,7 +12,7 @@ export function createRouter(db: DatabaseConnection): Router {
   const controller = new ListController(listService)
 
   router.get('/lists', controller.getAllLists.bind(controller))
-  router.get('/lists/:id', controller.getListById.bind(controller))
+  router.get('/lists/:id', controller.getListViewById.bind(controller))
   router.post('/lists', controller.createList.bind(controller))
   router.delete('/lists/:id', controller.deleteListById.bind(controller))
   router.put('/lists/:id', controller.updateListById.bind(controller))

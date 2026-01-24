@@ -1,6 +1,7 @@
 import { ItemDetailedView } from '../application/views/ItemDetailedView'
 import { ListDetailedView } from '../application/views/ListDetailedView'
 import { ListSummaryView } from '../application/views/ListSummaryView'
+import { Item } from '../domain/entities/Item'
 import { List } from '../domain/entities/List'
 import { IListRepository } from '../domain/repositories/IListRepository'
 import { ItemType } from '../domain/value-objects/ItemType'
@@ -69,7 +70,7 @@ export class ListRepositorySql implements IListRepository {
     }
   }
 
-  async getListById(id: string): Promise<ListDetailedView | null> {
+  async getListViewById(id: string): Promise<ListDetailedView | null> {
     const query = `
       SELECT
         l.id as list_id,
@@ -121,7 +122,7 @@ export class ListRepositorySql implements IListRepository {
 
       return list
     } catch (error: any) {
-      throw new Error(`Failed to get list by id, ${error}`)
+      throw new Error(`Failed to get list view by id, ${error}`)
     }
   }
 
@@ -202,6 +203,127 @@ export class ListRepositorySql implements IListRepository {
       await this.db.query(query, [id])
     } catch (error: any) {
       throw new Error(`Failed to delete list, ${error}`)
+    }
+  }
+
+  async updateList(list: List, transactionContext?: TransactionContext): Promise<void> {
+    const executor = transactionContext ?? this.db
+
+    const deleteItemsQuery = `
+      DELETE FROM core.li_list_items
+      WHERE list_id = $1
+    `
+
+    const createItemQuery = `
+      INSERT INTO core.li_list_items (id, list_id, name, type, was_bought)
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5
+      )
+    `
+
+    const createUnitItemQuery = `
+      INSERT INTO core.li_items_unit (id, list_items_id, total_quantity, unity_price)
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4
+      )
+    `
+
+    const createKgItemQuery = `
+      INSERT INTO core.li_items_kg (id, list_items_id, total_weight, kg_price)
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4
+      )
+    `
+
+    const updateListQuery = `
+      UPDATE core.li_lists
+      SET updated_at = $1
+      WHERE id = $2
+    `
+
+    try {
+      await executor.query(deleteItemsQuery, [list.id])
+
+      for (const item of list.items) {
+        await executor.query(createItemQuery, [item.id, list.id, item.name, item.getType().getValue(), item.wasBought])
+
+        switch (item.getType()) {
+          case ItemType.UNIT:
+            await executor.query(createUnitItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
+            break
+          case ItemType.KG:
+            await executor.query(createKgItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
+            break
+          default:
+            throw new Error(`Invalid item type: ${item.getType()}`)
+        }
+      }
+
+      await executor.query(updateListQuery, [new Date(), list.id])
+    } catch (error: any) {
+      throw new Error(`Failed to update list, ${error}`)
+    }
+  }
+
+  async getListDomainById(id: string): Promise<List | null> {
+    const query = `
+      SELECT
+        l.id as list_id,
+        l.updated_at as list_updated_at,
+        l.created_at as list_created_at,
+        li.id as item_id,
+        li.name as item_name,
+        li.type as item_type,
+        li.was_bought as item_was_bought,
+        iu.total_quantity as unit_total_quantity,
+        iu.unity_price as unit_price,
+        ik.total_weight as kg_total_weight,
+        ik.kg_price as kg_price
+      FROM core.li_lists l
+      JOIN core.li_list_items li on l.id = li.list_id
+      LEFT JOIN core.li_items_unit iu on li.id = iu.list_items_id
+      LEFT JOIN core.li_items_kg ik on li.id = ik.list_items_id
+      WHERE l.id = $1
+    `
+
+    try {
+      const result = await this.db.query(query, [id])
+
+      if (result.rows.length === 0) {
+        return null
+      }
+
+      const items: Item[] = result.rows.map(row => Item.fromPersistence({
+        id: row.item_id,
+        name: row.item_name,
+        itemType: row.item_type,
+        wasBought: row.item_was_bought,
+        totalUnities: row.unit_total_quantity,
+        unitPrice: row.unit_price,
+        totalWeight: row.kg_total_weight,
+        kgPrice: row.kg_price,
+      }))
+
+      const list: List = List.fromPersistence({
+        id: result.rows[0].list_id,
+        items: items,
+        updatedAt: result.rows[0].list_updated_at,
+        createdAt: result.rows[0].list_created_at,
+      })
+
+      return list
+    } catch (error: any) {
+      throw new Error(`Failed to get list by id, ${error}`)
     }
   }
 }

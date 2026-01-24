@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { ListService } from '../../application/services/ListService'
 import { CreateListDTO } from '../../application/dtos/CreateListDTO'
+import { UpdateListDTO } from '../../application/dtos/UpdateListDTO'
 
 export class ListController {
   constructor(private listService: ListService) { }
@@ -10,9 +11,14 @@ export class ListController {
     res.status(200).json({ data: lists })
   }
 
-  async getListById(req: Request, res: Response) {
+  async getListViewById(req: Request, res: Response) {
     const id = req.params.id as string
-    const list = await this.listService.getListById(id)
+    const list = await this.listService.getListViewById(id)
+
+    if (!list) {
+      res.status(404).json({ message: `Could not find list with id ${id}` })
+    }
+
     res.status(200).json({ data: list })
   }
 
@@ -29,6 +35,7 @@ export class ListController {
     const id = req.params.id as string
     const result = await this.listService.deleteListById(id)
 
+    // Service should return structure with code, data etc
     if (result) {
       res.status(200).json({ message: `Deleted list with id ${id}` })
     } else {
@@ -36,20 +43,12 @@ export class ListController {
     }
   }
 
-  // ao invés de deletar lista E items, devo deletar só os itens e adicionar os novos
-  // na lista já existente
   async updateListById(req: Request, res: Response) {
     const { data } = req.body
     const id = req.params.id as string
 
-    const result = await this.listService.deleteListById(id)
-
-    if (!result) {
-      res.status(404).json({ message: `Could not find list with id ${id}` })
-    } else {
-      const createListDto = CreateListDTO.fromRequest(data)
-      const list = await this.listService.createList(createListDto)
-      res.status(200).json({ data: list })
-    }
+    const updateListDto = UpdateListDTO.fromRequest(data)
+    const list = await this.listService.updateList(id, updateListDto)
+    res.status(200).json({ data: list })
   }
 }

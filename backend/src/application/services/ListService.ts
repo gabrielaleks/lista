@@ -3,6 +3,7 @@ import { List } from "../../domain/entities/List"
 import { IListRepository } from "../../domain/repositories/IListRepository"
 import { DatabaseConnection } from "../../utils/DatabaseConnection"
 import { CreateListDTO } from "../dtos/CreateListDTO"
+import { UpdateListDTO } from "../dtos/UpdateListDTO"
 import { ListDetailedView } from "../views/ListDetailedView"
 import { ListSummaryView } from "../views/ListSummaryView"
 
@@ -17,8 +18,8 @@ export class ListService {
     return lists
   }
 
-  async getListById(id: string): Promise<ListDetailedView | null> {
-    const list = await this.listRepository.getListById(id)
+  async getListViewById(id: string): Promise<ListDetailedView | null> {
+    const list = await this.listRepository.getListViewById(id)
     return list
   }
 
@@ -39,12 +40,12 @@ export class ListService {
       await this.listRepository.createList(list, transactionContext)
     })
 
-    const addedList = await this.listRepository.getListById(list.id)
+    const addedList = await this.listRepository.getListViewById(list.id)
     return addedList!
   }
 
   async deleteListById(id: string): Promise<boolean> {
-    const list = await this.listRepository.getListById(id)
+    const list = await this.listRepository.getListViewById(id)
 
     if (!list) {
       return false
@@ -52,5 +53,32 @@ export class ListService {
 
     await this.listRepository.deleteListById(id)
     return true
+  }
+
+  async updateList(id: string, updateListDto: UpdateListDTO): Promise<ListDetailedView | null> {
+    const list = await this.listRepository.getListDomainById(id)
+
+    if (!list) {
+      return null
+    }
+
+    const updatedItems = updateListDto.items.map(row => Item.create({
+      name: row.name,
+      itemType: row.itemType,
+      wasBought: row.wasBought,
+      totalUnities: row.totalUnities,
+      unitPrice: row.unitPrice,
+      totalWeight: row.totalWeight,
+      kgPrice: row.kgPrice,
+    }))
+
+    list.items = updatedItems
+
+    await this.db.transaction(async (transactionContext) => {
+      await this.listRepository.updateList(list, transactionContext)
+    })
+
+    const updatedList = await this.listRepository.getListViewById(id)
+    return updatedList
   }
 }
