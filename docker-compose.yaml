@@ -1,0 +1,92 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+      target: development
+    container_name: lista-backend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./backend:/backend
+    networks:
+      - lista-network
+
+  database:
+    image: postgres:15
+    container_name: database
+    environment:
+      POSTGRES_DB: lista
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - lista-network
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-migrations:
+    container_name: db-migrations
+    image: ghcr.io/amacneil/dbmate:main
+    volumes:
+      - ./backend/db:/db
+    networks:
+      - lista-network
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - database
+    environment:
+      - DBMATE_WAIT=true
+    command:
+      - 'up'
+
+  # db-seeders:
+  #   container_name: db-seeders
+  #   image: ghcr.io/amacneil/dbmate:main
+  #   volumes:
+  #     - ./backend/db:/db
+  #   networks:
+  #     - lista-network
+  #   env_file:
+  #     - ./backend/.env
+  #   environment:
+  #     - DBMATE_MIGRATIONS_DIR=/db/seeders
+  #     - DBMATE_WAIT=true
+  #   depends_on:
+  #     db-migrations:
+  #       condition: service_completed_successfully
+  #   command:
+  #     - 'up'
+
+  db-mocks:
+    container_name: db-mocks
+    image: ghcr.io/amacneil/dbmate:main
+    volumes:
+      - ./backend/db:/db
+    networks:
+      - lista-network
+    env_file:
+      - ./backend/.env
+    environment:
+      - DBMATE_MIGRATIONS_DIR=/db/mocks
+      - DBMATE_WAIT=true
+    depends_on:
+      # db-seeders:
+      db-migrations:
+        condition: service_completed_successfully
+    command:
+      - 'up'
+
+volumes:
+  postgres:
+
+networks:
+  lista-network:
+    driver: bridge
