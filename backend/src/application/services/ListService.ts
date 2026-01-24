@@ -4,8 +4,10 @@ import { IListRepository } from "../../domain/repositories/IListRepository"
 import { DatabaseConnection } from "../../utils/DatabaseConnection"
 import { CreateListDTO } from "../dtos/CreateListDTO"
 import { UpdateListDTO } from "../dtos/UpdateListDTO"
+import { CommonError } from "../errors/common.errors"
 import { ListDetailedView } from "../views/ListDetailedView"
 import { ListSummaryView } from "../views/ListSummaryView"
+import { ServiceResponse } from "./ServiceResponse"
 
 export class ListService {
   constructor(
@@ -13,17 +15,33 @@ export class ListService {
     private listRepository: IListRepository
   ) { }
 
-  async getAllLists(): Promise<ListSummaryView[]> {
+  async getAllLists(): Promise<ServiceResponse<ListSummaryView[]>> {
     const lists = await this.listRepository.getAllLists()
-    return lists
+
+    if (!lists) {
+      return {
+        ok: false,
+        error: CommonError.NotFound
+      }
+    }
+
+    return { ok: true, data: lists }
   }
 
-  async getListViewById(id: string): Promise<ListDetailedView | null> {
+  async getListViewById(id: string): Promise<ServiceResponse<ListDetailedView | null>> {
     const list = await this.listRepository.getListViewById(id)
-    return list
+
+    if (!list) {
+      return {
+        ok: false,
+        error: CommonError.NotFound
+      }
+    }
+
+    return { ok: true, data: list }
   }
 
-  async createList(createListDto: CreateListDTO): Promise<ListDetailedView> {
+  async createList(createListDto: CreateListDTO): Promise<ServiceResponse<ListDetailedView>> {
     const items = createListDto.items.map(row => Item.create({
       name: row.name,
       itemType: row.itemType,
@@ -41,25 +59,32 @@ export class ListService {
     })
 
     const addedList = await this.listRepository.getListViewById(list.id)
-    return addedList!
+    return { ok: true, data: addedList! }
   }
 
-  async deleteListById(id: string): Promise<boolean> {
+  async deleteListById(id: string): Promise<ServiceResponse<void>> {
     const list = await this.listRepository.getListViewById(id)
 
     if (!list) {
-      return false
+      return {
+        ok: false,
+        error: CommonError.NotFound
+      }
     }
 
     await this.listRepository.deleteListById(id)
-    return true
+    return { ok: true }
   }
 
-  async updateList(id: string, updateListDto: UpdateListDTO): Promise<ListDetailedView | null> {
+  async updateList(id: string, updateListDto: UpdateListDTO): Promise<ServiceResponse<ListDetailedView | null>> {
     const list = await this.listRepository.getListDomainById(id)
 
+
     if (!list) {
-      return null
+      return {
+        ok: false,
+        error: CommonError.NotFound
+      }
     }
 
     const updatedItems = updateListDto.items.map(row => Item.create({
@@ -79,6 +104,6 @@ export class ListService {
     })
 
     const updatedList = await this.listRepository.getListViewById(id)
-    return updatedList
+    return { ok: true, data: updatedList }
   }
 }
