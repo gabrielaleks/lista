@@ -12,6 +12,19 @@ services:
     networks:
       - lista-network
 
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+      target: development
+    container_name: lista-frontend
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./frontend:/frontend
+    networks:
+      - lista-network
+
   database:
     image: postgres:15
     container_name: database
