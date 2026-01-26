@@ -10,7 +10,7 @@
     "lint": "eslint --config eslint.strict.config.mjs . --ext .ts",
     "check": "npm run typecheck && npm run lint",
     "start": "node dist/index.js",
-    "test": "echo \"TODO: add tests\""
+    "test:unit": "jest --testMatch='**/unit/**/*.test.ts'"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +32,7 @@
     "dbmate": "^2.29.3",
     "eslint": "^9.39.2",
     "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
