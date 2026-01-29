@@ -86,7 +86,7 @@ export class ListRepositorySql implements IListRepository {
         ik.kg_price as kg_price,
         (COALESCE(iu.total_quantity * iu.unity_price, 0) + COALESCE(ik.total_weight * ik.kg_price, 0)) AS total_item_price
       FROM core.li_lists l
-      JOIN core.li_list_items li on l.id = li.list_id
+      LEFT JOIN core.li_list_items li on l.id = li.list_id
       LEFT JOIN core.li_items_unit iu on li.id = iu.list_items_id
       LEFT JOIN core.li_items_kg ik on li.id = ik.list_items_id
       WHERE l.id = $1
@@ -101,16 +101,20 @@ export class ListRepositorySql implements IListRepository {
         return null
       }
 
-      const items: ItemDetailedView[] = result.rows.map(row => ItemDetailedView.fromPersistence({
-        id: row.item_id,
-        name: row.item_name,
-        itemType: row.item_type,
-        wasBought: row.item_was_bought,
-        totalUnities: row.unit_total_quantity,
-        unitPrice: row.unit_price,
-        totalWeight: row.kg_total_weight,
-        kgPrice: row.kg_price,
-      }))
+      const items: ItemDetailedView[] = result.rows
+        .filter(row => row.item_id)
+        .map(row =>
+          ItemDetailedView.fromPersistence({
+            id: row.item_id!,
+            name: row.item_name,
+            itemType: row.item_type,
+            wasBought: row.item_was_bought,
+            totalUnities: row.unit_total_quantity,
+            unitPrice: row.unit_price,
+            totalWeight: row.kg_total_weight,
+            kgPrice: row.kg_price,
+          })
+        )
 
       const list: ListDetailedView = ListDetailedView.fromPersistence({
         id: result.rows[0].list_id,
@@ -174,18 +178,20 @@ export class ListRepositorySql implements IListRepository {
         [list.id, list.updatedAt, list.createdAt]
       )
 
-      for (const item of list.items) {
-        await executor.query(createItemQuery, [item.id, list.id, item.name, item.getType().getValue(), item.wasBought])
+      if (list.items) {
+        for (const item of list.items) {
+          await executor.query(createItemQuery, [item.id, list.id, item.name, item.getType().getValue(), item.wasBought])
 
-        switch (item.getType()) {
-          case ItemType.UNIT:
-            await executor.query(createUnitItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
-            break
-          case ItemType.KG:
-            await executor.query(createKgItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
-            break
-          default:
-            throw new Error(`Invalid item type: ${item.getType()}`)
+          switch (item.getType()) {
+            case ItemType.UNIT:
+              await executor.query(createUnitItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
+              break
+            case ItemType.KG:
+              await executor.query(createKgItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
+              break
+            default:
+              throw new Error(`Invalid item type: ${item.getType()}`)
+          }
         }
       }
     } catch (error: any) {
@@ -254,22 +260,24 @@ export class ListRepositorySql implements IListRepository {
     try {
       await executor.query(deleteItemsQuery, [list.id])
 
-      for (const item of list.items) {
-        await executor.query(createItemQuery, [item.id, list.id, item.name, item.getType().getValue(), item.wasBought])
+      if (list.items) {
+        for (const item of list.items) {
+          await executor.query(createItemQuery, [item.id, list.id, item.name, item.getType().getValue(), item.wasBought])
 
-        switch (item.getType()) {
-          case ItemType.UNIT:
-            await executor.query(createUnitItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
-            break
-          case ItemType.KG:
-            await executor.query(createKgItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
-            break
-          default:
-            throw new Error(`Invalid item type: ${item.getType()}`)
+          switch (item.getType()) {
+            case ItemType.UNIT:
+              await executor.query(createUnitItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
+              break
+            case ItemType.KG:
+              await executor.query(createKgItemQuery, [uuidv4(), item.id, item.getTotalQuantity(), item.getFixedPrice()])
+              break
+            default:
+              throw new Error(`Invalid item type: ${item.getType()}`)
+          }
         }
-      }
 
-      await executor.query(updateListQuery, [new Date(), list.id])
+        await executor.query(updateListQuery, [new Date(), list.id])
+      }
     } catch (error: any) {
       throw new Error(`Failed to update list, ${error}`)
     }
@@ -290,7 +298,7 @@ export class ListRepositorySql implements IListRepository {
         ik.total_weight as kg_total_weight,
         ik.kg_price as kg_price
       FROM core.li_lists l
-      JOIN core.li_list_items li on l.id = li.list_id
+      LEFT JOIN core.li_list_items li on l.id = li.list_id
       LEFT JOIN core.li_items_unit iu on li.id = iu.list_items_id
       LEFT JOIN core.li_items_kg ik on li.id = ik.list_items_id
       WHERE l.id = $1
@@ -303,16 +311,18 @@ export class ListRepositorySql implements IListRepository {
         return null
       }
 
-      const items: Item[] = result.rows.map(row => Item.fromPersistence({
-        id: row.item_id,
-        name: row.item_name,
-        itemType: row.item_type,
-        wasBought: row.item_was_bought,
-        totalUnities: row.unit_total_quantity,
-        unitPrice: row.unit_price,
-        totalWeight: row.kg_total_weight,
-        kgPrice: row.kg_price,
-      }))
+      const items: Item[] = result.rows
+        .filter(row => row.item_id)
+        .map(row => Item.fromPersistence({
+          id: row.item_id,
+          name: row.item_name,
+          itemType: row.item_type,
+          wasBought: row.item_was_bought,
+          totalUnities: row.unit_total_quantity,
+          unitPrice: row.unit_price,
+          totalWeight: row.kg_total_weight,
+          kgPrice: row.kg_price,
+        }))
 
       const list: List = List.fromPersistence({
         id: result.rows[0].list_id,

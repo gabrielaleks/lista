@@ -4,13 +4,13 @@ import { Item } from './Item'
 
 export class List {
   public id: string
-  public items: Item[]
+  public items: Item[] | null
   public updatedAt: Date
   public createdAt: Date
 
   constructor(
     id: string,
-    items: Item[],
+    items: Item[] | null,
     updatedAt: Date,
     createdAt: Date,
   ) {
@@ -37,7 +37,7 @@ export class List {
 
   static fromPersistence(data: {
     id: string,
-    items: Item[],
+    items: Item[] | null,
     updatedAt: Date,
     createdAt: Date
   }): List {

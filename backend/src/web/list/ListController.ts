@@ -90,7 +90,7 @@ export class ListController {
     const result = await this.listService.updateList(id, updateListDto)
 
     if (result.ok) {
-      res.status(200).json({ data: result.data })
+      res.status(200).json({ data: result.data, message: `Updated list ${id} with success` })
       return
     }
 
