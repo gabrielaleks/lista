@@ -148,6 +148,19 @@ export function ListEditPage() {
 		}
 	}, [list])
 
+	const getTotalBoughtPrice = () => {
+		return gridRows
+			.filter((row) => row.wasBought)
+			.reduce((total, row) => {
+				const price = parseFloat(row.xPrice)
+				const quantity = parseFloat(row.quantityX as string)
+				if (!isNaN(price) && !isNaN(quantity)) {
+					return total + price * quantity
+				}
+				return total
+			}, 0)
+	}
+
 	if (loading) return <p>Loading...</p>
 	if (error) return <p>Error: {error}</p>
 	if (!list) return <p>List not found</p>
@@ -281,6 +294,9 @@ export function ListEditPage() {
 					<IconButton color="primary" onClick={handleAddRow}>
 						<AddCircleOutlineIcon />
 					</IconButton>
+					<Typography variant="h6" className="flex items-center">
+						Total price of bought items: {getTotalBoughtPrice()}
+					</Typography>
 					<IconButton
 						disabled={loadingUpdate}
 						color="primary"
