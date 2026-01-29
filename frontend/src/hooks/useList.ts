@@ -25,6 +25,5 @@ export function useList(id: string | undefined) {
     fetchData()
   }, [id])
 
-
   return { list, loading, error }
 }

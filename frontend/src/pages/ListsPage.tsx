@@ -2,7 +2,9 @@ import { useNavigate } from 'react-router-dom'
 import { Card } from '../components/Card'
 import { useLists } from '../hooks/useLists'
 import { formatDate } from '../utils/common'
-import { Button, Container, Typography } from '@mui/material'
+import { Container, IconButton, Typography } from '@mui/material'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 export function ListsPage() {
 	const { lists, loading, error } = useLists()
@@ -19,12 +21,12 @@ export function ListsPage() {
 
 			{lists.map((list) => (
 				<Card key={list.id} createdAt={formatDate(list.createdAt)}>
-					<Button
-						variant="outlined"
-						onClick={() => navigate(`lists/${list.id}`)}
-					>
-						✏️ Edit
-					</Button>
+					<IconButton color="info" onClick={() => navigate(`lists/${list.id}`)}>
+						<EditIcon />
+					</IconButton>
+					<IconButton color="warning" onClick={() => console.log('delete')}>
+						<DeleteIcon />
+					</IconButton>
 				</Card>
 			))}
 		</Container>

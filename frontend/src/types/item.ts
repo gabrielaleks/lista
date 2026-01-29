@@ -1,3 +1,10 @@
+export const ItemType = {
+  UNIT: 'UNIT',
+  KG: 'KG'
+} as const
+
+export type ItemType = typeof ItemType[keyof typeof ItemType]
+
 export type Item =
   | {
     id: string

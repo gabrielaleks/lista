@@ -9,6 +9,11 @@ import { Box, Button, IconButton, Typography } from '@mui/material'
 import { formatDate } from '../utils/common'
 import React from 'react'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload'
+import type { List } from '../types/list'
+import { ItemType } from '../types/item'
+import { useUpdateList } from '../hooks/useUpdateList'
+import Alert from '@mui/material/Alert'
 
 type Row = {
 	id: string
@@ -43,6 +48,8 @@ const columns: GridColDef<Row>[] = [
 	{
 		field: 'name',
 		headerName: 'Name',
+		headerAlign: 'center',
+		align: 'center',
 		flex: 1,
 		minWidth: 10,
 		editable: true,
@@ -54,6 +61,8 @@ const columns: GridColDef<Row>[] = [
 	{
 		field: 'itemType',
 		headerName: 'Item type',
+		headerAlign: 'center',
+		align: 'center',
 		width: 100,
 		editable: true,
 		type: 'singleSelect',
@@ -62,6 +71,8 @@ const columns: GridColDef<Row>[] = [
 	{
 		field: 'quantityX',
 		headerName: 'Quantity',
+		headerAlign: 'center',
+		align: 'center',
 		width: 100,
 		editable: true,
 		type: 'number',
@@ -80,6 +91,8 @@ const columns: GridColDef<Row>[] = [
 	{
 		field: 'xPrice',
 		headerName: 'Price',
+		headerAlign: 'center',
+		align: 'center',
 		width: 100,
 		editable: true,
 		type: 'number',
@@ -97,7 +110,9 @@ const columns: GridColDef<Row>[] = [
 	{
 		field: 'wasBought',
 		headerName: 'Was bought?',
-		width: 100,
+		headerAlign: 'center',
+		align: 'center',
+		width: 130,
 		editable: true,
 		type: 'boolean',
 	},
@@ -106,11 +121,13 @@ const columns: GridColDef<Row>[] = [
 export function ListEditPage() {
 	const { id } = useParams<{ id: string }>()
 	const { list, loading, error } = useList(id)
+	const { update, loadingUpdate, errorUpdate } = useUpdateList()
+	const [successUpdate, setSuccessUpdate] = React.useState(false)
 	const [gridRows, setGridRows] = React.useState<Row[]>([])
 	const [selectedRows, setSelectedRows] =
 		React.useState<GridRowSelectionModel>()
 
-	React.useEffect(() => {
+	const setList = (list: List) => {
 		if (list?.items) {
 			const rows: Row[] = list.items?.map((item) => ({
 				id: item.id,
@@ -122,6 +139,12 @@ export function ListEditPage() {
 				wasBought: item.wasBought,
 			}))
 			setGridRows(rows)
+		}
+	}
+
+	React.useEffect(() => {
+		if (list) {
+			setList(list)
 		}
 	}, [list])
 
@@ -150,9 +173,44 @@ export function ListEditPage() {
 		setGridRows((prevRows) => [...prevRows, newRow])
 	}
 
-	const processRowUpdate = (newRow: Row) => {
-		console.log(newRow.name)
+	const handleListUpdate = async () => {
+		const updatedList: List = {
+			...list,
+			items: gridRows.map((item) => {
+				switch (item.itemType) {
+					case ItemType.UNIT:
+						return {
+							id: item.id,
+							name: item.name,
+							itemType: ItemType.UNIT,
+							wasBought: item.wasBought,
+							totalUnities: Number(item.quantityX),
+							unitPrice: item.xPrice,
+						}
+					case ItemType.KG:
+						return {
+							id: item.id,
+							name: item.name,
+							itemType: ItemType.KG,
+							wasBought: item.wasBought,
+							totalWeight: item.quantityX.toString(),
+							kgPrice: item.xPrice,
+						}
+					default:
+						throw new Error(`Invalid item type: ${item.itemType}`)
+				}
+			}),
+		}
 
+		const result = await update(updatedList)
+		if (result) {
+			setList(result)
+			setSuccessUpdate(true)
+			setTimeout(() => setSuccessUpdate(false), 2000)
+		}
+	}
+
+	const processRowUpdate = (newRow: Row) => {
 		setGridRows((prevRows) =>
 			prevRows.map((row) => (row.id === newRow.id ? newRow : row)),
 		)
@@ -169,10 +227,25 @@ export function ListEditPage() {
 				>
 					{formatDate(list.createdAt)}
 				</Typography>
-				<div className="flex justify-between mb-3">
+				<div className="flex justify-between my-3">
 					<Link to="/">
 						<Button variant="outlined">Return</Button>
 					</Link>
+					{loadingUpdate && (
+						<Alert severity="info" variant="outlined">
+							Updating list...
+						</Alert>
+					)}
+					{errorUpdate && (
+						<Alert severity="error" variant="outlined">
+							An error occurred when updating the list!
+						</Alert>
+					)}
+					{successUpdate && (
+						<Alert severity="success" variant="outlined">
+							List updated!
+						</Alert>
+					)}
 					<Button
 						disabled={isDeleteButtonDisabled}
 						variant="outlined"
@@ -199,11 +272,23 @@ export function ListEditPage() {
 							border: '2px solid #d32f2f',
 							boxSizing: 'border-box',
 						},
+						'& .MuiDataGrid-columnHeaderTitle': {
+							fontWeight: 'bold',
+						},
 					}}
 				/>
-				<IconButton color="primary" onClick={handleAddRow}>
-					<AddCircleOutlineIcon />
-				</IconButton>
+				<div className="flex justify-between">
+					<IconButton color="primary" onClick={handleAddRow}>
+						<AddCircleOutlineIcon />
+					</IconButton>
+					<IconButton
+						disabled={loadingUpdate}
+						color="primary"
+						onClick={handleListUpdate}
+					>
+						<DriveFolderUploadIcon />
+					</IconButton>
+				</div>
 			</Box>
 		</div>
 	)
