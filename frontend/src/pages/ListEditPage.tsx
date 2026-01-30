@@ -161,10 +161,6 @@ export function ListEditPage() {
 			}, 0)
 	}
 
-	if (loading) return <p>Loading...</p>
-	if (error) return <p>Error: {error}</p>
-	if (!list) return <p>List not found</p>
-
 	const isDeleteButtonDisabled = !selectedRows || selectedRows.ids.size === 0
 
 	const handleDelete = () => {
@@ -188,7 +184,7 @@ export function ListEditPage() {
 
 	const handleListUpdate = async () => {
 		const updatedList: List = {
-			...list,
+			...list!,
 			items: gridRows.map((item) => {
 				switch (item.itemType) {
 					case ItemType.UNIT:
@@ -232,80 +228,90 @@ export function ListEditPage() {
 
 	return (
 		<div style={{ padding: '2rem' }}>
-			<Box sx={{ maxWidth: 700, mx: 'auto', width: '100%' }}>
-				<Typography
-					variant="h4"
-					className="flex justify-center"
-					fontWeight="bold"
-				>
-					{formatDate(list.createdAt)}
-				</Typography>
-				<div className="flex justify-between my-3">
-					<Link to="/">
-						<Button variant="outlined">Return</Button>
-					</Link>
-					{loadingUpdate && (
-						<Alert severity="info" variant="outlined">
-							Updating list...
-						</Alert>
-					)}
-					{errorUpdate && (
-						<Alert severity="error" variant="outlined">
-							An error occurred when updating the list!
-						</Alert>
-					)}
-					{successUpdate && (
-						<Alert severity="success" variant="outlined">
-							List updated!
-						</Alert>
-					)}
-					<Button
-						disabled={isDeleteButtonDisabled}
-						variant="outlined"
-						onClick={handleDelete}
+			{loading ? (
+				<Alert severity="info" variant="outlined">
+					Loading items...
+				</Alert>
+			) : list ? (
+				<Box sx={{ maxWidth: 700, mx: 'auto', width: '100%' }}>
+					<Typography
+						variant="h4"
+						className="flex justify-center"
+						fontWeight="bold"
 					>
-						Delete
-					</Button>
-				</div>
-				<DataGrid
-					rows={gridRows}
-					columns={columns}
-					processRowUpdate={processRowUpdate}
-					pageSizeOptions={[5]}
-					checkboxSelection
-					disableRowSelectionExcludeModel
-					disableRowSelectionOnClick
-					onRowSelectionModelChange={(selected) => {
-						setSelectedRows(selected)
-					}}
-					sx={{
-						'& .cell-error': {
-							backgroundColor: '#ffebee',
-							color: '#c62828',
-							border: '2px solid #d32f2f',
-							boxSizing: 'border-box',
-						},
-						'& .MuiDataGrid-columnHeaderTitle': {
-							fontWeight: 'bold',
-						},
-					}}
-				/>
-				<div className="flex justify-between">
-					<IconButton color="primary" onClick={handleAddRow}>
-						<AddCircleOutlineIcon />
-					</IconButton>
-					<Typography variant="h6" className="flex items-center">
-						Total price of bought items: {getTotalBoughtPrice()}
+						{formatDate(list.createdAt)}
 					</Typography>
-					<IconButton
-						disabled={loadingUpdate}
-						color="primary"
-						onClick={handleListUpdate}
-					>
-						<DriveFolderUploadIcon />
-					</IconButton>
-				</div>
-			</Box>
+					<div className="flex justify-between my-3">
+						<Link to="/">
+							<Button variant="outlined">Return</Button>
+						</Link>
+						{loadingUpdate && (
+							<Alert severity="info" variant="outlined">
+								Updating list...
+							</Alert>
+						)}
+						{errorUpdate && (
+							<Alert severity="error" variant="outlined">
+								An error occurred when updating the list!
+							</Alert>
+						)}
+						{successUpdate && (
+							<Alert severity="success" variant="outlined">
+								List updated!
+							</Alert>
+						)}
+						<Button
+							disabled={isDeleteButtonDisabled}
+							variant="outlined"
+							onClick={handleDelete}
+						>
+							Delete
+						</Button>
+					</div>
+					<DataGrid
+						rows={gridRows}
+						columns={columns}
+						processRowUpdate={processRowUpdate}
+						pageSizeOptions={[5]}
+						checkboxSelection
+						disableRowSelectionExcludeModel
+						disableRowSelectionOnClick
+						onRowSelectionModelChange={(selected) => {
+							setSelectedRows(selected)
+						}}
+						sx={{
+							'& .cell-error': {
+								backgroundColor: '#ffebee',
+								color: '#c62828',
+								border: '2px solid #d32f2f',
+								boxSizing: 'border-box',
+							},
+							'& .MuiDataGrid-columnHeaderTitle': {
+								fontWeight: 'bold',
+							},
+						}}
+					/>
+					<div className="flex justify-between">
+						<IconButton color="primary" onClick={handleAddRow}>
+							<AddCircleOutlineIcon />
+						</IconButton>
+						<Typography variant="h6" className="flex items-center">
+							Total price of bought items: {getTotalBoughtPrice()}
+						</Typography>
+						<IconButton
+							disabled={loadingUpdate}
+							color="primary"
+							onClick={handleListUpdate}
+						>
+							<DriveFolderUploadIcon />
+						</IconButton>
+					</div>
+				</Box>
+			) : (
+				<Alert severity="error" variant="outlined">
+					{error}
+				</Alert>
+			)}
 		</div>
 	)
 }

@@ -15,9 +15,6 @@ export function ListsPage() {
 	const [successRemove, setSuccessRemove] = useState(false)
 	const navigate = useNavigate()
 
-	if (loading) return <p>Loading...</p>
-	if (error) return <p>Error: {error}</p>
-
 	const handleDelete = async (list: List) => {
 		const response = await remove(list.id)
 		if (response) {
@@ -33,38 +30,54 @@ export function ListsPage() {
 				Lista de compras
 			</Typography>
 
-			<div className="mb-4">
-				{loadingRemove && (
-					<Alert severity="info" variant="outlined">
-						Removing list...
-					</Alert>
-				)}
-				{errorRemove && (
-					<Alert severity="error" variant="outlined">
-						An error occurred when removing the list!
-					</Alert>
-				)}
-				{successRemove && (
-					<Alert severity="success" variant="outlined">
-						Successfully removed the list!
-					</Alert>
-				)}
-			</div>
+			{loading ? (
+				<Alert severity="info" variant="outlined">
+					Loading lists...
+				</Alert>
+			) : Array.isArray(lists) && lists.length > 0 ? (
+				<div>
+					<div className="mb-4">
+						{loadingRemove && (
+							<Alert severity="info" variant="outlined">
+								Removing list...
+							</Alert>
+						)}
+						{errorRemove && (
+							<Alert severity="error" variant="outlined">
+								An error occurred when removing the list!
+							</Alert>
+						)}
+						{successRemove && (
+							<Alert severity="success" variant="outlined">
+								Successfully removed the list!
+							</Alert>
+						)}
+					</div>
 
-			{lists.map((list) => (
-				<Card key={list.id} createdAt={formatDate(list.createdAt)}>
-					<IconButton
-						color="info"
-						disabled={loadingRemove}
-						onClick={() => navigate(`lists/${list.id}`)}
-					>
-						<EditIcon />
-					</IconButton>
-					<IconButton color="warning" onClick={() => handleDelete(list)}>
-						<DeleteIcon />
-					</IconButton>
-				</Card>
-			))}
+					{lists.map((list) => (
+						<Card key={list.id} createdAt={formatDate(list.createdAt)}>
+							<IconButton
+								color="info"
+								disabled={loadingRemove}
+								onClick={() => navigate(`lists/${list.id}`)}
+							>
+								<EditIcon />
+							</IconButton>
+							<IconButton color="warning" onClick={() => handleDelete(list)}>
+								<DeleteIcon />
+							</IconButton>
+						</Card>
+					))}
+				</div>
+			) : error ? (
+				<Alert severity="error" variant="outlined">
+					Error: {error}
+				</Alert>
+			) : (
+				<Alert severity="warning" variant="outlined">
+					No lists found
+				</Alert>
+			)}
 		</Container>
 	)
 }
