@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material'
 import React from 'react'
 
 interface CardProps {
@@ -7,7 +8,7 @@ interface CardProps {
 export function Card({ createdAt, children }: CardProps) {
 	return (
 		<div className="border border-gray-300 rounded-lg p-4 mb-4 flex justify-between items-center">
-			<h2 className="text-sm font-medium text-gray-600 m-0">{createdAt}</h2>
+			<Typography className="text-sm m-0">{createdAt}</Typography>
 			<div>{children}</div>
 		</div>
 	)

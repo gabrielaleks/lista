@@ -121,11 +121,26 @@ const columns: GridColDef<Row>[] = [
 export function ListEditPage() {
 	const { id } = useParams<{ id: string }>()
 	const { list, loading, error } = useList(id)
+	const [showLoading, setShowLoading] = React.useState(false)
 	const { update, loadingUpdate, errorUpdate } = useUpdateList()
 	const [successUpdate, setSuccessUpdate] = React.useState(false)
 	const [gridRows, setGridRows] = React.useState<Row[]>([])
 	const [selectedRows, setSelectedRows] =
 		React.useState<GridRowSelectionModel>()
+	const shouldShowEmpty = !loading && !showLoading && list === null
+
+	React.useEffect(() => {
+		if (!loading) return
+
+		const timeout = setTimeout(() => {
+			setShowLoading(true)
+		}, 200)
+
+		return () => {
+			clearTimeout(timeout)
+			setShowLoading(false)
+		}
+	}, [loading])
 
 	const setList = (list: List) => {
 		if (list?.items) {
@@ -155,7 +170,7 @@ export function ListEditPage() {
 				const price = parseFloat(row.xPrice)
 				const quantity = parseFloat(row.quantityX as string)
 				if (!isNaN(price) && !isNaN(quantity)) {
-					return total + price * quantity
+					return Math.round((total + price * quantity) * 100) / 100
 				}
 				return total
 			}, 0)
@@ -228,7 +243,7 @@ export function ListEditPage() {
 
 	return (
 		<div style={{ padding: '2rem' }}>
-			{loading ? (
+			{showLoading ? (
 				<Alert severity="info" variant="outlined">
 					Loading items...
 				</Alert>
@@ -281,9 +296,8 @@ export function ListEditPage() {
 						}}
 						sx={{
 							'& .cell-error': {
-								backgroundColor: '#ffebee',
-								color: '#c62828',
-								border: '2px solid #d32f2f',
+								backgroundColor: '#2f3142',
+								border: '2px solid #bd93f9',
 								boxSizing: 'border-box',
 							},
 							'& .MuiDataGrid-columnHeaderTitle': {
@@ -307,11 +321,11 @@ export function ListEditPage() {
 						</IconButton>
 					</div>
 				</Box>
-			) : (
+			) : shouldShowEmpty ? (
 				<Alert severity="error" variant="outlined">
 					{error}
 				</Alert>
-			)}
+			) : null}
 		</div>
 	)
 }
