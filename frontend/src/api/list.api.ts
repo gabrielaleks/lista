@@ -21,3 +21,9 @@ export async function updateListById(id: string, list: List): Promise<List> {
 
   return response.data.data
 }
+
+export async function deleteListById(id: string): Promise<List> {
+  const response = await client.delete(`${API_BASE}/lists/${id}`)
+
+  return response.data.message
+}

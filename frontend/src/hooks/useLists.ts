@@ -7,6 +7,10 @@ export function useLists() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const removeFromState = (id: string) => {
+    setLists(prev => prev.filter(list => list.id !== id))
+  }
+
   useEffect(() => {
     fetchLists()
       .then(fetchedLists => {
@@ -19,5 +23,5 @@ export function useLists() {
       .finally(() => setLoading(false))
   }, [])
 
-  return { lists, loading, error }
+  return { lists, loading, error, removeFromState }
 }
