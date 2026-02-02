@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
 	DataGrid,
 	type GridColDef,
@@ -129,6 +129,7 @@ export function NewListPage() {
 		React.useState<GridRowSelectionModel>()
 	const [currentHash, setCurrentHash] = React.useState<string | null>(null)
 	const [savedHash, setSavedHash] = React.useState<string | null>(null)
+	const navigate = useNavigate()
 
 	const hasUnsavedChanges = currentHash !== savedHash ? true : false
 	useUnsavedChangesWarning(hasUnsavedChanges)
@@ -211,7 +212,7 @@ export function NewListPage() {
 	}, [gridRows])
 
 	const handleListSave = async () => {
-		const updatedList: List = {
+		const createdList: List = {
 			id: crypto.randomUUID(),
 			createdAt: new Date().toDateString(),
 			updatedAt: new Date().toDateString(),
@@ -241,13 +242,14 @@ export function NewListPage() {
 			}),
 		}
 
-		const result = await create(updatedList)
+		const result = await create(createdList)
 		if (result) {
 			setList(result)
 			const canonicalizedRows = canonicalizeRows(gridRows)
 			setSavedHash(hash(canonicalizedRows))
 			setSuccessCreate(true)
 			setTimeout(() => setSuccessCreate(false), 2000)
+			navigate(`/lists/${result.id}`)
 		}
 	}
 

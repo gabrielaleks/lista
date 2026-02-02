@@ -3,7 +3,6 @@ import { Card } from '../components/Card'
 import { useLists } from '../hooks/useLists'
 import { formatDate } from '../utils/common'
 import { Alert, Container, IconButton, Typography } from '@mui/material'
-import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { useRemoveList } from '../hooks/useRemoveList'
 import type { List } from '../types/list'
@@ -79,15 +78,18 @@ export function ListsPage() {
 					</div>
 
 					{lists.map((list) => (
-						<Card key={list.id} createdAt={formatDate(list.createdAt)}>
+						<Card
+							key={list.id}
+							onClick={() => navigate(`lists/${list.id}`)}
+							createdAt={formatDate(list.createdAt)}
+						>
 							<IconButton
-								color="primary"
-								disabled={loadingRemove}
-								onClick={() => navigate(`lists/${list.id}`)}
+								color="info"
+								onClick={(e) => {
+									e.stopPropagation()
+									handleDelete(list)
+								}}
 							>
-								<EditIcon />
-							</IconButton>
-							<IconButton color="info" onClick={() => handleDelete(list)}>
 								<DeleteIcon />
 							</IconButton>
 						</Card>

@@ -220,12 +220,12 @@ export function ListEditPage() {
 			.sort((a, b) => a.name.localeCompare(b.name))
 
 	React.useEffect(() => {
-		if (gridRows.length === 0) return
+		if (gridRows.length === 0 && currentHash === null) return
 		const canonicalizedRows = canonicalizeRows(gridRows)
 		const newHash = hash(canonicalizedRows)
 		setCurrentHash(newHash)
 		setSavedHash((prev) => (prev === null ? newHash : prev))
-	}, [gridRows])
+	}, [gridRows, currentHash])
 
 	const handleListUpdate = async () => {
 		const updatedList: List = {
