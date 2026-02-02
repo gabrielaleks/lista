@@ -3,15 +3,17 @@ import { Typography } from '@mui/material'
 interface DottedCardProps {
 	title: string
 	onClick?: () => void
+	children?: React.ReactNode
 }
-export function DottedCard({ title, onClick }: DottedCardProps) {
+export function DottedCard({ title, onClick, children }: DottedCardProps) {
 	return (
 		<div
-			className="border h-19 border-dashed rounded-lg p-4 mb-4 flex justify-evenly
+			className="border h-19 border-dashed rounded-lg p-4 mb-4 flex justify-center
       items-center cursor-pointer duration-500 hover:scale-105"
 			onClick={onClick}
 		>
 			<Typography variant="h5">{title}</Typography>
+			<div>{children}</div>
 		</div>
 	)
 }

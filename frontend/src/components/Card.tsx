@@ -10,7 +10,7 @@ interface CardProps {
 export function Card({ createdAt, onClick, children }: CardProps) {
 	return (
 		<div
-			className="border border-gray-300 rounded-lg p-4 mb-4 flex justify-between
+			className="border border-gray-300 rounded-lg p-4 mb-4 flex justify-center
 			items-center cursor-pointer duration-500 hover:scale-105"
 			onClick={onClick}
 		>

@@ -2,12 +2,14 @@ import { useNavigate } from 'react-router-dom'
 import { Card } from '../components/Card'
 import { useLists } from '../hooks/useLists'
 import { formatDate } from '../utils/common'
-import { Alert, Container, IconButton, Typography } from '@mui/material'
+import { Alert, Box, Container, IconButton, Typography } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { useRemoveList } from '../hooks/useRemoveList'
 import type { List } from '../types/list'
 import { useEffect, useState } from 'react'
 import { DottedCard } from '../components/DottedCard'
+import Logo from '../../public/lista-logo.svg'
+import NewList from '../assets/new-list.svg?react'
 
 export function ListsPage() {
 	const { lists, loading, error, removeFromState } = useLists()
@@ -42,15 +44,24 @@ export function ListsPage() {
 
 	return (
 		<Container maxWidth="xs" sx={{ mt: 4 }}>
-			<Typography variant="h4" align="center" fontWeight="bold" gutterBottom>
-				Lista de compras
-			</Typography>
+			<Box
+				display="flex"
+				alignItems="center"
+				justifyContent="center"
+				gap={1}
+				mb={2}
+			>
+				<img src={Logo} alt="App logo" width={48} height={48} />
+				<Typography variant="h4" fontWeight="bold">
+					Lista de compras
+				</Typography>
+				<img src={Logo} alt="App logo" width={48} height={48} />
+			</Box>
 
 			{!loading && !showLoading && (
-				<DottedCard
-					title="Add new list"
-					onClick={() => navigate('/lists/new')}
-				></DottedCard>
+				<DottedCard title="Add new list" onClick={() => navigate('/lists/new')}>
+					<NewList width={48} height={48} />
+				</DottedCard>
 			)}
 
 			{showLoading ? (
@@ -84,7 +95,7 @@ export function ListsPage() {
 							createdAt={formatDate(list.createdAt)}
 						>
 							<IconButton
-								color="info"
+								color="primary"
 								onClick={(e) => {
 									e.stopPropagation()
 									handleDelete(list)

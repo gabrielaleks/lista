@@ -1,13 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
-import {
-	DataGrid,
-	type GridColDef,
-	type GridRowSelectionModel,
-} from '@mui/x-data-grid'
+import { DataGrid, type GridRowSelectionModel } from '@mui/x-data-grid'
 import { Box, Button, IconButton, Typography } from '@mui/material'
 import React from 'react'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
-import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload'
 import type { List } from '../types/list'
 import { ItemType } from '../types/item'
 import Alert from '@mui/material/Alert'
@@ -17,114 +12,14 @@ import {
 	useConfirmIfNeeded,
 	useUnsavedChangesWarning,
 } from '../hooks/useUnsavedChangesWarning'
-
-type Row = {
-	id: string
-	name: string
-	itemType: 'UNIT' | 'KG'
-	quantityX: number | string
-	xPrice: string
-	wasBought: boolean
-}
-
-const currencyFormatter = new Intl.NumberFormat('CH', {
-	style: 'decimal',
-	minimumFractionDigits: 2,
-	maximumFractionDigits: 2,
-})
-
-const validateName = (value: string) => {
-	return value && value.trim() !== ''
-}
-
-const validateQuantity = (value: number | string) => {
-	const numValue = parseFloat(value as string)
-	return !isNaN(numValue) && numValue > 0
-}
-
-const validatePrice = (value: string) => {
-	const numValue = parseFloat(value)
-	return !isNaN(numValue) && numValue > 0
-}
-
-const columns: GridColDef<Row>[] = [
-	{
-		field: 'name',
-		headerName: 'Name',
-		headerAlign: 'center',
-		align: 'center',
-		flex: 1,
-		minWidth: 10,
-		editable: true,
-		type: 'string',
-		cellClassName: (params) => {
-			return validateName(params.value) ? '' : 'cell-error'
-		},
-	},
-	{
-		field: 'itemType',
-		headerName: 'Item type',
-		headerAlign: 'center',
-		align: 'center',
-		width: 100,
-		editable: true,
-		type: 'singleSelect',
-		valueOptions: ['UNIT', 'KG'],
-	},
-	{
-		field: 'quantityX',
-		headerName: 'Quantity',
-		headerAlign: 'center',
-		align: 'center',
-		width: 100,
-		editable: true,
-		type: 'number',
-		renderCell: (params) => {
-			let unityForm = 'unity'
-			if (params.row.itemType === 'UNIT' && Number(params.row.quantityX) > 1) {
-				unityForm = 'unities'
-			}
-			const suffix = params.row.itemType === 'UNIT' ? unityForm : ' kg'
-			return `${params.value} ${suffix}`
-		},
-		cellClassName: (params) => {
-			return validateQuantity(params.value) ? '' : 'cell-error'
-		},
-	},
-	{
-		field: 'xPrice',
-		headerName: 'Price',
-		headerAlign: 'center',
-		align: 'center',
-		width: 100,
-		editable: true,
-		type: 'number',
-		valueFormatter: (value) => {
-			return currencyFormatter.format(value)
-		},
-		renderCell: (params) => {
-			const suffix = params.row.itemType === 'UNIT' ? '/ unity' : '/ kg'
-			return `${params.value} ${suffix}`
-		},
-		cellClassName: (params) => {
-			return validatePrice(params.value) ? '' : 'cell-error'
-		},
-	},
-	{
-		field: 'wasBought',
-		headerName: 'Was bought?',
-		headerAlign: 'center',
-		align: 'center',
-		width: 130,
-		editable: true,
-		type: 'boolean',
-	},
-]
+import { listColumns, type ListRow } from '../utils/datagrid'
+import BackArrow from '../assets/back-arrow.svg?react'
+import Save from '../assets/save.svg?react'
 
 export function NewListPage() {
 	const { create, loadingCreate, errorCreate } = useCreateList()
 	const [successCreate, setSuccessCreate] = React.useState(false)
-	const [gridRows, setGridRows] = React.useState<Row[]>([])
+	const [gridRows, setGridRows] = React.useState<ListRow[]>([])
 	const [selectedRows, setSelectedRows] =
 		React.useState<GridRowSelectionModel>()
 	const [currentHash, setCurrentHash] = React.useState<string | null>(null)
@@ -137,7 +32,7 @@ export function NewListPage() {
 
 	const setList = (list: List) => {
 		if (list?.items) {
-			const rows: Row[] = list.items?.map((item) => ({
+			const rows: ListRow[] = list.items?.map((item) => ({
 				id: item.id,
 				name: item.name,
 				itemType: item.itemType,
@@ -172,7 +67,7 @@ export function NewListPage() {
 	}
 
 	const handleAddRow = () => {
-		const newRow: Row = {
+		const newRow: ListRow = {
 			id: crypto.randomUUID(),
 			name: '',
 			itemType: 'UNIT',
@@ -184,14 +79,14 @@ export function NewListPage() {
 		setGridRows((prevRows) => [...prevRows, newRow])
 	}
 
-	const processRowUpdate = (newRow: Row) => {
+	const processRowUpdate = (newRow: ListRow) => {
 		setGridRows((prevRows) =>
 			prevRows.map((row) => (row.id === newRow.id ? newRow : row)),
 		)
 		return newRow
 	}
 
-	const canonicalizeRows = (rows: Row[]) =>
+	const canonicalizeRows = (rows: ListRow[]) =>
 		[...rows]
 			.map((r) => ({
 				name: r.name.trim(),
@@ -272,7 +167,9 @@ export function NewListPage() {
 							}
 						}}
 					>
-						<Button variant="outlined">Return</Button>
+						<IconButton className="hover:scale-115" size="small">
+							<BackArrow width={48} height={48} />
+						</IconButton>
 					</Link>
 					{loadingCreate && (
 						<Alert severity="info" variant="outlined">
@@ -299,7 +196,7 @@ export function NewListPage() {
 				</div>
 				<DataGrid
 					rows={gridRows}
-					columns={columns}
+					columns={listColumns}
 					processRowUpdate={processRowUpdate}
 					pageSizeOptions={[5]}
 					checkboxSelection
@@ -330,8 +227,13 @@ export function NewListPage() {
 						disabled={loadingCreate}
 						color="primary"
 						onClick={handleListSave}
+						size="small"
 					>
-						<DriveFolderUploadIcon />
+						<Save
+							width={36}
+							height={36}
+							className="duration-300 hover:scale-125"
+						/>
 					</IconButton>
 				</div>
 			</Box>
