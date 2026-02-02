@@ -12,9 +12,10 @@ import type { List } from '../types/list'
 import { ItemType } from '../types/item'
 import Alert from '@mui/material/Alert'
 import { useCreateList } from '../hooks/useCreateList'
+import hash from 'object-hash'
 import {
-	useUnsavedChangesWarning,
 	useConfirmIfNeeded,
+	useUnsavedChangesWarning,
 } from '../hooks/useUnsavedChangesWarning'
 
 type Row = {
@@ -126,8 +127,10 @@ export function NewListPage() {
 	const [gridRows, setGridRows] = React.useState<Row[]>([])
 	const [selectedRows, setSelectedRows] =
 		React.useState<GridRowSelectionModel>()
+	const [currentHash, setCurrentHash] = React.useState<string | null>(null)
+	const [savedHash, setSavedHash] = React.useState<string | null>(null)
 
-	const hasUnsavedChanges = gridRows.length > 0
+	const hasUnsavedChanges = currentHash !== savedHash ? true : false
 	useUnsavedChangesWarning(hasUnsavedChanges)
 	const confirmNavigation = useConfirmIfNeeded(hasUnsavedChanges)
 
@@ -180,11 +183,38 @@ export function NewListPage() {
 		setGridRows((prevRows) => [...prevRows, newRow])
 	}
 
+	const processRowUpdate = (newRow: Row) => {
+		setGridRows((prevRows) =>
+			prevRows.map((row) => (row.id === newRow.id ? newRow : row)),
+		)
+		return newRow
+	}
+
+	const canonicalizeRows = (rows: Row[]) =>
+		[...rows]
+			.map((r) => ({
+				name: r.name.trim(),
+				itemType: r.itemType,
+				quantityX: Number(r.quantityX),
+				xPrice: Number(r.xPrice),
+				wasBought: r.wasBought,
+			}))
+			.sort((a, b) => a.name.localeCompare(b.name))
+
+	React.useEffect(() => {
+		if (gridRows) {
+			const canonicalizedRows = canonicalizeRows(gridRows)
+			const newHash = hash(canonicalizedRows)
+			setCurrentHash(newHash)
+			setSavedHash((prev) => (prev === null ? newHash : prev))
+		}
+	}, [gridRows])
+
 	const handleListSave = async () => {
 		const updatedList: List = {
-			id: 'a',
-			createdAt: 'a',
-			updatedAt: 'a',
+			id: crypto.randomUUID(),
+			createdAt: new Date().toDateString(),
+			updatedAt: new Date().toDateString(),
 			items: gridRows.map((item) => {
 				switch (item.itemType) {
 					case ItemType.UNIT:
@@ -214,16 +244,11 @@ export function NewListPage() {
 		const result = await create(updatedList)
 		if (result) {
 			setList(result)
+			const canonicalizedRows = canonicalizeRows(gridRows)
+			setSavedHash(hash(canonicalizedRows))
 			setSuccessCreate(true)
 			setTimeout(() => setSuccessCreate(false), 2000)
 		}
-	}
-
-	const processRowUpdate = (newRow: Row) => {
-		setGridRows((prevRows) =>
-			prevRows.map((row) => (row.id === newRow.id ? newRow : row)),
-		)
-		return newRow
 	}
 
 	return (

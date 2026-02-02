@@ -14,6 +14,11 @@ import type { List } from '../types/list'
 import { ItemType } from '../types/item'
 import { useUpdateList } from '../hooks/useUpdateList'
 import Alert from '@mui/material/Alert'
+import hash from 'object-hash'
+import {
+	useConfirmIfNeeded,
+	useUnsavedChangesWarning,
+} from '../hooks/useUnsavedChangesWarning'
 
 type Row = {
 	id: string
@@ -128,6 +133,12 @@ export function ListEditPage() {
 	const [selectedRows, setSelectedRows] =
 		React.useState<GridRowSelectionModel>()
 	const shouldShowEmpty = !loading && !showLoading && list === null
+	const [currentHash, setCurrentHash] = React.useState<string | null>(null)
+	const [savedHash, setSavedHash] = React.useState<string | null>(null)
+
+	const hasUnsavedChanges = currentHash !== savedHash ? true : false
+	useUnsavedChangesWarning(hasUnsavedChanges)
+	const confirmNavigation = useConfirmIfNeeded(hasUnsavedChanges)
 
 	React.useEffect(() => {
 		if (!loading) return
@@ -197,6 +208,25 @@ export function ListEditPage() {
 		setGridRows((prevRows) => [...prevRows, newRow])
 	}
 
+	const canonicalizeRows = (rows: Row[]) =>
+		[...rows]
+			.map((r) => ({
+				name: r.name.trim(),
+				itemType: r.itemType,
+				quantityX: Number(r.quantityX),
+				xPrice: Number(r.xPrice),
+				wasBought: r.wasBought,
+			}))
+			.sort((a, b) => a.name.localeCompare(b.name))
+
+	React.useEffect(() => {
+		if (gridRows.length === 0) return
+		const canonicalizedRows = canonicalizeRows(gridRows)
+		const newHash = hash(canonicalizedRows)
+		setCurrentHash(newHash)
+		setSavedHash((prev) => (prev === null ? newHash : prev))
+	}, [gridRows])
+
 	const handleListUpdate = async () => {
 		const updatedList: List = {
 			...list!,
@@ -229,6 +259,8 @@ export function ListEditPage() {
 		const result = await update(updatedList)
 		if (result) {
 			setList(result)
+			const canonicalizedRows = canonicalizeRows(gridRows)
+			setSavedHash(hash(canonicalizedRows))
 			setSuccessUpdate(true)
 			setTimeout(() => setSuccessUpdate(false), 2000)
 		}
@@ -257,7 +289,14 @@ export function ListEditPage() {
 						{formatDate(list.createdAt)}
 					</Typography>
 					<div className="flex justify-between my-3">
-						<Link to="/">
+						<Link
+							to="/"
+							onClick={(e) => {
+								if (!confirmNavigation()) {
+									e.preventDefault()
+								}
+							}}
+						>
 							<Button variant="outlined">Return</Button>
 						</Link>
 						{loadingUpdate && (
