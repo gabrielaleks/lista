@@ -27,3 +27,9 @@ export async function deleteListById(id: string): Promise<List> {
 
   return response.data.message
 }
+
+export async function createList(list: List): Promise<List> {
+  const response = await client.post(`${API_BASE}/lists/`, { data: list })
+
+  return response.data.data
+}

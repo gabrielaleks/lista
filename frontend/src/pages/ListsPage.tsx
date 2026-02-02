@@ -8,6 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { useRemoveList } from '../hooks/useRemoveList'
 import type { List } from '../types/list'
 import { useEffect, useState } from 'react'
+import { DottedCard } from '../components/DottedCard'
 
 export function ListsPage() {
 	const { lists, loading, error, removeFromState } = useLists()
@@ -45,6 +46,13 @@ export function ListsPage() {
 			<Typography variant="h4" align="center" fontWeight="bold" gutterBottom>
 				Lista de compras
 			</Typography>
+
+			{!loading && !showLoading && (
+				<DottedCard
+					title="Add new list"
+					onClick={() => navigate('/lists/new')}
+				></DottedCard>
+			)}
 
 			{showLoading ? (
 				<Alert severity="info" variant="outlined">
