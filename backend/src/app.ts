@@ -9,7 +9,7 @@ import { errorMiddleware } from './middlewares/error.middleware'
 export function createServer({ dbConnection }: { dbConnection: DatabaseConnection }): Express {
   const app = express()
 
-  app.use(corsMiddleware)
+  app.use(corsMiddleware())
   app.use(express.json())
 
   app.use((req: Request, _res: Response, next) => {

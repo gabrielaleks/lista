@@ -1,10 +1,16 @@
 import cors from 'cors'
 
-const frontendHost = process.env.LOCAL_FRONTEND_HOST || 'localhost'
-const frontendPort = process.env.LOCAL_FRONTEND_PORT || '5173'
+export const corsMiddleware = () => {
+  const frontendHost = process.env.LOCAL_FRONTEND_HOST
+  const frontendPort = process.env.LOCAL_FRONTEND_PORT
 
-export const corsMiddleware = cors({
-  origin: `http://${frontendHost}:${frontendPort}`,
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-})
+  if (!frontendHost || !frontendPort) {
+    throw new Error('Frontend host/port not defined in environment variables')
+  }
+
+  return cors({
+    origin: `http://${frontendHost}:${frontendPort}`,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+}
