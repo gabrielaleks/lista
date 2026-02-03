@@ -15,6 +15,7 @@ import {
 import { listColumns, type ListRow } from '../utils/datagrid'
 import BackArrow from '../assets/back-arrow.svg?react'
 import Save from '../assets/save.svg?react'
+import { v4 as uuidv4 } from 'uuid'
 
 export function NewListPage() {
 	const { create, loadingCreate, errorCreate } = useCreateList()
@@ -68,7 +69,7 @@ export function NewListPage() {
 
 	const handleAddRow = () => {
 		const newRow: ListRow = {
-			id: crypto.randomUUID(),
+			id: uuidv4(),
 			name: '',
 			itemType: 'UNIT',
 			quantityX: 0,
@@ -108,7 +109,7 @@ export function NewListPage() {
 
 	const handleListSave = async () => {
 		const createdList: List = {
-			id: crypto.randomUUID(),
+			id: uuidv4(),
 			createdAt: new Date().toDateString(),
 			updatedAt: new Date().toDateString(),
 			items: gridRows.map((item) => {
