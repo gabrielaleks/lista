@@ -51,11 +51,23 @@ export function ListsPage() {
 				gap={1}
 				mb={2}
 			>
-				<img src={Logo} alt="App logo" width={48} height={48} />
-				<Typography variant="h4" fontWeight="bold">
+				<img src={Logo} alt="App logo" width={36} height={36} />
+				<Typography
+					variant="h4"
+					fontWeight="bold"
+					sx={{
+						fontSize: {
+							xs: '2rem',
+							sm: '2rem',
+							md: '2rem',
+							lg: '2rem',
+						},
+						whiteSpace: 'nowrap',
+					}}
+				>
 					Lista de compras
 				</Typography>
-				<img src={Logo} alt="App logo" width={48} height={48} />
+				<img src={Logo} alt="App logo" width={36} height={36} />
 			</Box>
 
 			{!loading && !showLoading && (
