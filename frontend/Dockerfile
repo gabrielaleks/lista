@@ -15,11 +15,8 @@ COPY ./frontend /frontend
 RUN npm run build
 
 # Production stage
-FROM node:20-bookworm-slim AS production
-WORKDIR /frontend
-
-COPY --from=build /frontend/dist ./dist
-COPY --from=build /frontend/package.json ./package.json
-COPY --from=build /frontend/package-lock.json ./package-lock.json
-RUN npm ci --omit=dev
-CMD ["npm", "run", "prod"]
+FROM nginx:alpine AS production
+COPY --from=build /frontend/dist /usr/share/nginx/html
+COPY ./frontend/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
