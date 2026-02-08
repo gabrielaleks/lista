@@ -3,13 +3,13 @@ import { Card } from '../components/Card'
 import { useLists } from '../hooks/useLists'
 import { formatDate } from '../utils/common'
 import { Alert, Box, Container, IconButton, Typography } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
 import { useRemoveList } from '../hooks/useRemoveList'
 import type { List } from '../types/list'
 import { useEffect, useState } from 'react'
 import { DottedCard } from '../components/DottedCard'
 import Logo from '../../public/lista-logo.svg'
 import NewList from '../assets/new-list.svg?react'
+import Trash from '../assets/trash.svg?react'
 
 export function ListsPage() {
 	const { lists, loading, error, removeFromState } = useLists()
@@ -108,12 +108,17 @@ export function ListsPage() {
 						>
 							<IconButton
 								color="primary"
+								size="small"
 								onClick={(e) => {
 									e.stopPropagation()
 									handleDelete(list)
 								}}
 							>
-								<DeleteIcon />
+								<Trash
+									width={24}
+									height={24}
+									className="duration-300 hover:scale-110"
+								/>
 							</IconButton>
 						</Card>
 					))}

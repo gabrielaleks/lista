@@ -1,8 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { DataGrid, type GridRowSelectionModel } from '@mui/x-data-grid'
-import { Box, Button, IconButton, Typography } from '@mui/material'
+import { Box, IconButton, Typography } from '@mui/material'
 import React from 'react'
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import type { List } from '../types/list'
 import { ItemType } from '../types/item'
 import Alert from '@mui/material/Alert'
@@ -15,6 +14,8 @@ import {
 import { listColumns, type ListRow } from '../utils/datagrid'
 import BackArrow from '../assets/back-arrow.svg?react'
 import Save from '../assets/save.svg?react'
+import Trash from '../assets/trash.svg?react'
+import Add from '../assets/add.svg?react'
 import { v4 as uuidv4 } from 'uuid'
 
 export function NewListPage() {
@@ -187,13 +188,17 @@ export function NewListPage() {
 							List saved!
 						</Alert>
 					)}
-					<Button
+					<IconButton
 						disabled={isDeleteButtonDisabled}
-						variant="outlined"
+						size="small"
 						onClick={handleDelete}
 					>
-						Delete
-					</Button>
+						<Trash
+							width={48}
+							height={48}
+							className="duration-300 hover:scale-115"
+						/>
+					</IconButton>
 				</div>
 				<DataGrid
 					rows={gridRows}
@@ -217,18 +222,21 @@ export function NewListPage() {
 						},
 					}}
 				/>
-				<div className="flex justify-between">
-					<IconButton color="primary" onClick={handleAddRow}>
-						<AddCircleOutlineIcon />
+				<div className="flex justify-between mt-1">
+					<IconButton size="small" color="primary" onClick={handleAddRow}>
+						<Add
+							width={36}
+							height={36}
+							className="duration-300 hover:scale-125"
+						/>
 					</IconButton>
 					<Typography variant="h6" className="flex items-center">
 						Total price of bought items: {getTotalBoughtPrice()}
 					</Typography>
 					<IconButton
-						disabled={loadingCreate}
-						color="primary"
-						onClick={handleListSave}
 						size="small"
+						disabled={loadingCreate}
+						onClick={handleListSave}
 					>
 						<Save
 							width={36}
