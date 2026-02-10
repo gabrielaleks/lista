@@ -1,5 +1,3 @@
-pat: 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
-
 # Build migrations
 ## Create image locally to test
 docker buildx build \
