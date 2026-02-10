@@ -71,7 +71,7 @@ export function ListsPage() {
 			</Box>
 
 			{!loading && !showLoading && (
-				<DottedCard title="New list..." onClick={() => navigate('/lists/new')}>
+				<DottedCard title="New list" onClick={() => navigate('/lists/new')}>
 					<NewList width={48} height={48} />
 				</DottedCard>
 			)}
