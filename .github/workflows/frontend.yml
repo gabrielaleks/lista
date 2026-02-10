@@ -54,4 +54,5 @@ jobs:
             --target production \
             --push \
             --cache-from=type=registry,ref=ghcr.io/gabrielaleks/lista-frontend:cache \
-            --cache-to=type=registry,ref=ghcr.io/gabrielaleks/lista-frontend:cache,mode=max
+            --cache-to=type=registry,ref=ghcr.io/gabrielaleks/lista-frontend:cache,mode=max \
+            .
