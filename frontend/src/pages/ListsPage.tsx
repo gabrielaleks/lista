@@ -7,7 +7,7 @@ import { useRemoveList } from '../hooks/useRemoveList'
 import type { List } from '../types/list'
 import { useEffect, useState } from 'react'
 import { DottedCard } from '../components/DottedCard'
-import Logo from '../../public/lista-logo.svg'
+import Logo from '/lista-logo.svg'
 import NewList from '../assets/new-list.svg?react'
 import Trash from '../assets/trash.svg?react'
 
