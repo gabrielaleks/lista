@@ -4,7 +4,7 @@ import type { List } from '../types/list'
 
 export function useList(id: string | undefined) {
   const [list, setList] = useState<List | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!!id)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
