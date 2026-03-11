@@ -44,3 +44,22 @@ jobs:
             --cache-from type=gha \
             --cache-to type=gha,mode=max \
             --push .
+
+      - name: Authenticate with Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci
+          use-cache: 'true'
+
+      - name: Deploy to Raspberry Pi
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.RPI_TAILSCALE_IP }}
+          username: ${{ secrets.RPI_USER }}
+          key: ${{ secrets.RPI_SSH_KEY }}
+          script: |
+            cd ${{ secrets.RPI_DEPLOY_PATH }}
+            docker compose pull
+            docker compose restart
