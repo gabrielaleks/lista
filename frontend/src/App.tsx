@@ -1,9 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { ListsPage } from './pages/ListsPage'
-import { ListEditPage } from './pages/ListEditPage'
+import { ListPage } from './pages/ListPage'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import { theme } from './theme'
-import { NewListPage } from './pages/NewListPage'
 
 export function App() {
 	return (
@@ -12,8 +11,7 @@ export function App() {
 			<BrowserRouter>
 				<Routes>
 					<Route path="/" element={<ListsPage />}></Route>
-					<Route path="/lists/:id" element={<ListEditPage />}></Route>
-					<Route path="/lists/new" element={<NewListPage />}></Route>
+					<Route path="/lists/:id" element={<ListPage />}></Route>
 				</Routes>
 			</BrowserRouter>
 		</ThemeProvider>

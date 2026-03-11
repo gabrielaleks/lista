@@ -103,7 +103,7 @@ export function ListsPage() {
 					{lists.map((list) => (
 						<Card
 							key={list.id}
-							onClick={() => navigate(`lists/${list.id}`)}
+							onClick={() => navigate(`/lists/${list.id}`)}
 							createdAt={formatDate(list.createdAt)}
 						>
 							<IconButton
