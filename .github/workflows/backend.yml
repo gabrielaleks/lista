@@ -21,12 +21,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Connect to Tailscale
+      - name: Authenticate with Tailscale
         uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           audience: ${{ secrets.TS_AUDIENCE }}
           tags: tag:ci
+
+      - name: Pull and restart container
+        run: |
+          cd ${{ secrets.RPI_DEPLOY_PATH }}
+          docker compose pull
+          docker compose restart
 
       # - name: Set up QEMU
       #   uses: docker/setup-qemu-action@v2
