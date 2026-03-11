@@ -62,4 +62,4 @@ jobs:
           script: |
             cd ${{ secrets.RPI_DEPLOY_PATH }}
             docker compose pull
-            docker compose restart
+            docker compose up -d --force-recreate
