@@ -65,7 +65,7 @@ export function ListsPage() {
 						whiteSpace: 'nowrap',
 					}}
 				>
-					Lista de compras
+					Lista de compras - TESTE LALALA
 				</Typography>
 				<img src={Logo} alt="App logo" width={36} height={36} />
 			</Box>
