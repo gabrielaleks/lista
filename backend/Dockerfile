@@ -1,5 +1,5 @@
 # Base
-FROM node:20-bookworm-slim AS base
+FROM --platform=$BUILDPLATFORM node:20-bookworm-slim AS base
 WORKDIR /backend
 COPY ./backend/package.json ./backend/package-lock.json ./
 

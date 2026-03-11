@@ -1,5 +1,5 @@
 # Base stage for both dev and prod
-FROM node:20-bookworm-slim AS base
+FROM --platform=$BUILDPLATFORM node:20-bookworm-slim AS base
 WORKDIR /frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./
 
