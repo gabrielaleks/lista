@@ -28,11 +28,16 @@ jobs:
           audience: ${{ secrets.TS_AUDIENCE }}
           tags: tag:ci
 
-      - name: Pull and restart container
-        run: |
-          cd ${{ secrets.RPI_DEPLOY_PATH }}
-          docker compose pull
-          docker compose restart
+      - name: Deploy to Raspberry Pi
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.RPI_TAILSCALE_IP }}
+          username: ${{ secrets.RPI_USER }}
+          key: ${{ secrets.RPI_SSH_KEY }}
+          script: |
+            cd ${{ secrets.RPI_DEPLOY_PATH }}
+            docker compose pull
+            docker compose restart
 
       # - name: Set up QEMU
       #   uses: docker/setup-qemu-action@v2
